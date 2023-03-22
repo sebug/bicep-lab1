@@ -90,13 +90,12 @@ var extensionVersion = '1.0'
 var maaTenantName = 'GuestAttestation'
 var maaEndpoint = substring('emptyString', 0, 0)
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
-  name: storageAccountName
-  location: location
-  sku: {
-    name: 'Standard_LRS'
+module storageModule 'storage.bicep' = {
+  name: 'storageTemplate'
+  params: {
+    location: location
+    storageAccountName: storageAccountName
   }
-  kind: 'Storage'
 }
 
 resource publicIp 'Microsoft.Network/publicIPAddresses@2022-05-01' = {
@@ -226,7 +225,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2022-03-01' = {
     diagnosticsProfile: {
       bootDiagnostics: {
         enabled: true
-        storageUri: storageAccount.properties.primaryEndpoints.blob
+        storageUri: storageModule.outputs.storageURI
       }
     }
     securityProfile: ((securityType == 'TrustedLaunch') ? securityProfileJson : json('null'))
